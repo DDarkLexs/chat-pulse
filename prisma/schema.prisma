@@ -1,0 +1,42 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  userID   Int        @id @default(autoincrement())
+  nome     String
+  telefone String     @unique
+  senha    String     @default("1234")
+  online   Boolean    @default(true)
+  created  DateTime   @default(now())
+  updated  DateTime   @updatedAt
+  conversa Conversa[]
+}
+
+model Conversa {
+  conversaID    Int        @id @default(autoincrement())
+  mensagem      Mensagem[]
+  chaveConversa String     @default(uuid())
+  created       DateTime   @default(now())
+  updated       DateTime   @updatedAt
+  Usuario       Usuario    @relation(fields: [usuarioUserID], references: [userID], onUpdate: Cascade)
+  usuarioUserID Int
+}
+
+model Mensagem {
+  mensagemID         Int      @id @default(autoincrement())
+  texto              String   @default("")
+  visto              Boolean  @default(false)
+  created            DateTime @default(now())
+  updated            DateTime @updatedAt
+  Conversa           Conversa @relation(fields: [conversaConversaID], references: [conversaID],  onUpdate: Cascade)
+  conversaConversaID Int
+}
