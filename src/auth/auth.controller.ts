@@ -3,19 +3,18 @@ import {
   Controller,
   Get,
   NotFoundException,
-  Param,
+  Patch,
   Post,
   Query,
   Req,
-  UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
 import { Usuario } from '@prisma/client';
-import { AuthenticateUserDto, CreateUsuarioDto } from './dto/usuario.dto';
-import { AuthGuard } from './auth.guard';
+import { IUsuarioAtulizado } from 'src/@types/main';
 import { Public } from 'src/jwt/jwt.constants';
+import { AuthService } from './auth.service';
+import { AuthenticateUserDto, CreateUsuarioDto } from './dto/usuario.dto';
 /* 
                                                                                                        
   ,---.            ,--.  ,--.                      ,--.  ,--.                ,--.  ,--.                
@@ -35,10 +34,18 @@ export class AuthController {
     return this.authService.authenticate(user);
   }
 }
-
 @Controller('usuario')
 export class UsuarioController {
   constructor(private authService: AuthService) {}
+  @Get()
+  async getOneFriend(@Query('userID') userID: string): Promise<Usuario> {
+    
+    const response = await this.authService.findOne({ userID: Number(userID) });
+    if (!response) {
+      throw new NotFoundException();
+    }
+    return response;
+  }
   @Get('perfil')
   async getOneUserById(@Req() req: any): Promise<Usuario> {
     const userID = req.user.userID;
@@ -48,6 +55,14 @@ export class UsuarioController {
     }
     return response;
   }
+  @Patch('status')
+  async AtualizaStatus(
+    @Req() req: any,
+    @Body('estado') estado: boolean,
+  ): Promise<IUsuarioAtulizado> {
+    return this.authService.setEstado(estado, req.user.userID);
+  }
+
   @Public()
   @Post()
   @UsePipes(ValidationPipe)

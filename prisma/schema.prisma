@@ -11,32 +11,48 @@ datasource db {
 }
 
 model Usuario {
-  userID   Int        @id @default(autoincrement())
-  nome     String
-  telefone String     @unique
-  senha    String     @default("1234")
-  online   Boolean    @default(true)
-  created  DateTime   @default(now())
-  updated  DateTime   @updatedAt
-  conversa Conversa[]
+  userID            Int        @id @default(autoincrement())
+  nome              String
+  telefone          String     @unique
+  senha             String     @default("1234567")
+  bio               String     @default("dispónivel")
+  online            Boolean    @default(true)
+  created           DateTime   @default(now())
+  updated           DateTime   @updatedAt
+  Amigo1            Amizade[]  @relation("userID1")
+  Amigo2            Amizade[]  @relation("userID2")
+  ChatRoomUser1     ChatRoom[] @relation("ChatRoomUser1")
+  ChatRoomUser2     ChatRoom[] @relation("ChatRoomUser2")
+  MensagemEnviadas  Mensagem[] @relation("enviador")
+  MensagemRecebidas Mensagem[] @relation("destinario")
 }
 
-model Conversa {
-  conversaID    Int        @id @default(autoincrement())
-  mensagem      Mensagem[]
-  chaveConversa String     @default(uuid())
-  created       DateTime   @default(now())
-  updated       DateTime   @updatedAt
-  Usuario       Usuario    @relation(fields: [usuarioUserID], references: [userID], onUpdate: Cascade)
-  usuarioUserID Int
+model Amizade {
+  amizadeID Int      @id @default(autoincrement())
+  userID1   Int
+  userID2   Int
+  created   DateTime @default(now())
+  Usuario   Usuario  @relation("userID1", fields: [userID1], references: [userID])
+  Amigo     Usuario  @relation("userID2", fields: [userID2], references: [userID])
+}
+
+model ChatRoom {
+  ChatRoomID     Int      @id @default(autoincrement())
+  chatKey        String   @default(uuid())
+  Usuario1       Usuario? @relation("ChatRoomUser1", fields: [usuarioUserID1], references: [userID])
+  usuarioUserID1 Int?
+  Usuario2       Usuario? @relation("ChatRoomUser2", fields: [usuarioUserID2], references: [userID])
+  usuarioUserID2 Int?
 }
 
 model Mensagem {
-  mensagemID         Int      @id @default(autoincrement())
-  texto              String   @default("")
-  visto              Boolean  @default(false)
-  created            DateTime @default(now())
-  updated            DateTime @updatedAt
-  Conversa           Conversa @relation(fields: [conversaConversaID], references: [conversaID],  onUpdate: Cascade)
-  conversaConversaID Int
+  mensagemID   Int      @id @default(autoincrement())
+  texto        String   @default("")
+  visto        Boolean  @default(false)
+  created      DateTime @default(now())
+  updated      DateTime @updatedAt
+  enviadorID   Int?
+  destinarioID Int?
+  Destinario   Usuario? @relation("destinario", fields: [enviadorID], references: [userID])
+  Enviador     Usuario? @relation("enviador", fields: [destinarioID], references: [userID])
 }
